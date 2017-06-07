@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+
+	<bean id="mySchedule" class="com.aek.service.task.Schedule" />
+
+	<bean id="mysql2SqlSchedule" class="com.aek.service.task.ScheduleMysql2Sql" />
+
+	<bean id="scheduleList"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="runBySeverStartTrigger" />
+				<!-- <ref bean="runByHourTrigger" /> -->
+				<!-- <ref bean="runByTenMinuteTrigger" /> -->
+				<!-- <ref bean="runByMidnightTrigger" /> -->
+			</list>
+		</property>
+	</bean>
+	<!-- 服务器启动后5秒后执行，只执行一次 -->
+	<bean id="runBySeverStartTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail">
+			<bean
+				class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+				<property name="targetObject" ref="mySchedule" />
+				<property name="targetMethod" value="runBySeverStart" />
+			</bean>
+		</property>
+		<property name="repeatCount">
+			<value>0</value>
+		</property>
+		<property name="startDelay">
+			<value>10000</value>
+		</property>
+	</bean>
+
+	<!-- 从9点到18点，每小时执行一次执行一次 -->
+	<!-- <bean id="runByHourTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean"> 
+		<property name="jobDetail"> <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
+		<property name="targetObject" ref="mySchedule" /> <property name="targetMethod" 
+		value="runByHour" /> </bean> </property> <property name="cronExpression"> 
+		<value>0 0/60 9-18 * * ?</value> </property> </bean> -->
+
+
+	<!-- 每1分钟运行 -->
+	<bean id="runByTenMinuteTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<bean
+				class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+				<property name="targetObject" ref="mySchedule" />
+				<!-- <property name="targetObject" ref="mysql2SqlSchedule" /> -->
+				<property name="targetMethod" value="runByTenMinute" />
+				<!-- <property name="concurrent" value="fasle" /> -->
+			</bean>
+		</property>
+		<property name="cronExpression">
+			<value>0 */10 * * * ?</value>
+		</property>
+		<property name="startDelay">
+			<value>1</value>
+		</property>
+	</bean>
+
+	<!-- 每天凌晨00:30执行一次 -->
+	<!-- <bean id="runByMidnightTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean"> 
+		<property name="jobDetail"> <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
+		<property name="targetObject" ref="mySchedule" /> <property name="targetMethod" 
+		value="runByMidnight" /> </bean> </property> <property name="cronExpression"> 
+		<value>0 30 0 * * ?</value> </property> </bean> -->
+
+
+</beans>
